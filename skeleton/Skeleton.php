@@ -27,7 +27,7 @@ class Skeleton {
     }
 
     private function loadBones($className) {
-        // load dem bones
+        // Load dem bones
         $requiredBone = $className . EXT;
         foreach($this->bones as $bone) {
             $bonePath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, join([SKELETON_PATH, $bone, DIRECTORY_SEPARATOR, $requiredBone]));
