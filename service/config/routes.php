@@ -2,6 +2,3 @@
 /**
  * Route Config
  */
-$config->route(array(
-	''
-));

@@ -4,10 +4,9 @@ class Skeleton {
     protected $bones = array(
         'dependencies'
     );
-
     public $loadedBones = array();
-
-    public $createdEndpoints = array();
+    public $endpoints = array();
+    public $libraries = array();
 
     public function __construct() {
         // Autoload Dependencies & Helpers
@@ -17,11 +16,10 @@ class Skeleton {
             list($filePath, $className) = [$file, 'Skeleton_' . basename($file, EXT)];
             if(file_exists($filePath)) {
                 include $filePath;
-                $this->{strtolower(basename($filePath, EXT))} = new $className;
+                $this->{strtolower(basename($filePath, EXT))} = new $className($this);
             }
         }
-        // Finish Up
-        $this->loadConfigs();
+        // Run App
     }
 
     public function addBones($boneDir) {
@@ -35,17 +33,8 @@ class Skeleton {
             $bonePath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, join([SKELETON_PATH, $bone, DIRECTORY_SEPARATOR, $requiredBone]));
             if(file_exists($bonePath)) {
                 require $bonePath;
+                $this->loadedBones[] = basename($bonePath, EXT);
                 break;
-            }
-        }
-    }
-
-    private function loadConfigs() {
-        $configDir = SERVICE_PATH . 'config/';
-        $config = $this->config;
-        foreach (glob($configDir . '*.php') as $configFile) {
-            if(file_exists($configFile)) {
-                include $configFile;
             }
         }
     }
