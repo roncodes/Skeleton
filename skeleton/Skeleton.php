@@ -7,6 +7,8 @@ class Skeleton {
 
     public $loadedBones = array();
 
+    public $createdEndpoints = array();
+
     public function __construct() {
         // Autoload Dependencies & Helpers
         spl_autoload_register([$this, 'loadBones']);
