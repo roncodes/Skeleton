@@ -2,7 +2,4 @@
 /**
  * The test endpoint for testing
  */
-$test = $skeleton->new->Endpoint_Entity('Test');
-$test->route('GET', function() {
-	
-});
+$test = $skeleton->new->Endpoint('Test');

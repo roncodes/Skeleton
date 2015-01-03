@@ -7,4 +7,8 @@ class Endpoint_Entity {
 
 	}
 
+	public function setTable($tableName) {
+		
+	}
+
 }

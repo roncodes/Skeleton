@@ -4,23 +4,36 @@ class Skeleton_Router {
 	public $skeleton;
 	public $request;
 	public $output;
+	public $map = array();
+	public $default_endpoint;
 
 	public function __construct($skeleton) {
 		$this->skeleton = $skeleton;
-		$this->request = json_decode(json_encode($_REQUEST));
+		$this->default_endpoint = 'test';
 	}
 
-	public function getRequest($property = null) {
+	public function request($property = null) {
 		return ($property !== null && property_exists($this->request, $property)) ? $this->request->{$property} : $this->request;
 	}
 
 	public function map(array $routes) {
 		foreach($routes as $route => $action) {
-
+			$this->map[$route] = $action;
 		}
 	}
 
 	public function response($method, $uri, $callback) {
-		$callback($this->request);
+		return $callback($this->request);
+	}
+
+	public function _onLoadFinish() {
+		$currentUri = $this->skeleton->request->server('REQUEST_URI');
+		foreach($this->map as $uri => $endpoint) {
+			if($uri == $currentUri) {
+				$this->output = $endpoint;
+				return;
+			}
+		}
+		$this->output = $this->default_endpoint;
 	}
 }
