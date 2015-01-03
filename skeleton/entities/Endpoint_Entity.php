@@ -3,6 +3,7 @@ class Endpoint_Entity {
 
 	public $name;
 	public $dbTable;
+	public $outputCalled = false;
 	private $callback;
 	private $skeleton;
 
@@ -12,11 +13,21 @@ class Endpoint_Entity {
 	}
 
 	public function __destruct() {
-		call_user_func($this->callback, $this->skeleton, $this);
+		if(!$this->outputCalled) {
+			// run the users callback
+			call_user_func($this->callback, $this->skeleton, $this);
+		}
 	}
 
 	public function setTable($tableName) {
 		$this->dbTable = $tableName;
+		return $this;
+	}
+
+	public function output() {
+		// run default output -- GET, POST, PUT, DELETE Factory stuff
+		$this->outputCalled = true;
+		echo json_encode(array('status' => 'success'));
 	}
 
 }
