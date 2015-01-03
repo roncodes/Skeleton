@@ -11,8 +11,8 @@ class Skeleton_New {
 	 * Creates a new endpoint entity/object
 	 * @param String $endpointName Name of the entity
 	 */
-	public function Endpoint($endpointName) {
-		$endpoint = new Endpoint_Entity($endpointName);
+	public function Endpoint($endpointName, $callback) {
+		$endpoint = new Endpoint_Entity($endpointName, $callback, $this->skeleton);
 		return $endpoint;
 	}
 
