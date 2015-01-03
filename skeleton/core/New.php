@@ -15,9 +15,4 @@ class Skeleton_New {
 		$endpoint = new Endpoint_Entity($endpointName, $callback, $this->skeleton);
 		return $endpoint;
 	}
-
-	public function Database($alias = null, $environment = null, $port = null, $type = null, $host = null, $name = null, $user = null, $password = null) {
-		$database = new Database_Entity($alias, $environment, $port, $type, $host, $name, $user, $password);
-		return $database;
-	}
 }

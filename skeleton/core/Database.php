@@ -10,6 +10,7 @@ class Skeleton_Database {
 	public function add(Database_Entity $database) {
 		$this->connections[$database->alias] = $database;
 		R::addDatabase($database->alias, sprintf('%s:host=%s;dbname=%s', $database->type, $database->host, $database->name), $database->user, $database->password);
+		$this->select($database->alias);
 		return true;
 	}
 

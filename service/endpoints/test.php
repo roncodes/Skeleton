@@ -3,6 +3,6 @@
  * The test endpoint for testing
  */
 $endpoint = $skeleton->new->Endpoint('Test', function($s, $e) {
-	echo $e->dbTable;
+	$fields = R::inspect('users');
+	var_dump($fields);
 })->setTable('users');
-$endpoint->output();
