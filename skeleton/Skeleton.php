@@ -4,7 +4,8 @@ class Skeleton {
     protected $bones = array(
         'dependencies',
         'helpers',
-        'entities'
+        'entities',
+        'formats'
     );
     public $loadedBones = array();
     public $endpoints = array();

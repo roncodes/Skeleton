@@ -3,7 +3,8 @@ class Endpoint_Entity {
 
 	public $name;
 	public $dbTable;
-	public $outputCalled = false;
+	public $factoryOutputCalled = false;
+	private $outputFormat = 'json';
 	private $callback;
 	private $skeleton;
 
@@ -13,10 +14,26 @@ class Endpoint_Entity {
 	}
 
 	public function __destruct() {
-		if(!$this->outputCalled) {
+		if(!$this->factoryOutputCalled) {
 			// run the users callback
-			call_user_func($this->callback, $this->skeleton, $this);
+			call_user_func($this->callback, $this->skeleton, $this, $this->skeleton->request);
 		}
+	}
+
+	public function get() {
+
+	}
+
+	public function post() {
+
+	}
+
+	public function put() {
+
+	}
+
+	public function delete() {
+
 	}
 
 	public function setTable($tableName) {
@@ -24,10 +41,47 @@ class Endpoint_Entity {
 		return $this;
 	}
 
-	public function output() {
+	public function factoryOutput() {
 		// run default output -- GET, POST, PUT, DELETE Factory stuff
-		$this->outputCalled = true;
-		echo json_encode(array('status' => 'success'));
+		$this->factoryOutputCalled = true;
+		if($this->skeleton->request->method() == 'GET') {
+			$all = R::findAll($this->dbTable);
+			$this->out(R::exportAll($all));
+		}
+		return $this;
+	}
+
+	public function out($data) {
+		switch ($this->outputFormat) {
+			case 'json':
+				JSON::out($data);
+				break;	
+			case 'xml':
+				XML::out($data);
+				break;	
+			default:
+				JSON::out($data);
+				break;
+		}
+	}
+
+	public function outputAs($format = 'json') {
+		$format = strtolower($format);
+		switch ($format) {
+			case 'json':
+				$this->outputFormat = 'json';
+				break;
+			case 'xml':
+				$this->outputFormat = 'xml';
+				break;
+			case 'csv':
+				$this->outputFormat = 'csv';
+				break;
+			default:
+				$this->outputFormat = 'json';
+				break;
+		}
+		return $this;
 	}
 
 }

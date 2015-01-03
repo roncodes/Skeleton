@@ -5,8 +5,9 @@ class Skeleton_Request {
 	public $request;
 	public $server;
 
-	public function __construct($skeleton) {
+	public function __construct($skeleton, $body = null) {
 		$this->skeleton = $skeleton;
+		$this->body = $body ? (string) $body : null;
 	}
 
 	public function id($hash = true) {}
@@ -31,9 +32,15 @@ class Skeleton_Request {
 
 	public function files() {}
 
-	public function body() {}
+	public function body() {
+		// Only get it once
+        if (null === $this->body) {
+            $this->body = @file_get_contents('php://input');
+        }
+        return $this->body;
+	}
 
-	public function param($key) {}
+	public function param($key, $value = null) {}
 
 	public function isSecure() {}
 
@@ -41,7 +48,24 @@ class Skeleton_Request {
 
 	public function pathname() {}
 
-	public function method($method = null) {}
+	public function method($is = null, $allow_override = true) {
+        $method = $this->server('REQUEST_METHOD');
+        // Override
+        if ($allow_override && $method === 'POST') {
+            // For legacy servers, override the HTTP method with the X-HTTP-Method-Override header or _method parameter
+            if ($this->server('X_HTTP_METHOD_OVERRIDE')) {
+                $method = $this->server('X_HTTP_METHOD_OVERRIDE');
+            } else {
+                $method = $this->param('_method', $method);
+            }
+            $method = strtoupper($method);
+        }
+        // We're doing a check
+        if (null !== $is) {
+            return strcasecmp($method, $is) === 0;
+        }
+        return $method;
+    }
 
 	public function isMethod($method) {
 		return $this->method($method);
