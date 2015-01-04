@@ -72,4 +72,8 @@ class Skeleton_Request {
 	}
 
 	public function query($key, $value = null) {}
+
+	public function segment($index = null) {
+		
+	}
 }

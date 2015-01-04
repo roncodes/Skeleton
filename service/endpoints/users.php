@@ -8,8 +8,8 @@ $endpoint = $skeleton->new->Endpoint('users')->setTable('users');
 // 	$endpoint->out($endpoint->model->getAll());
 // });
 
-// $endpoint->get('*', function($skeleton, $endpoint, $request) {
-// 	$endpoint->out($endpoint->model->get($request->param('id')));
+// $endpoint->get('$1', function($skeleton, $endpoint, $request) {
+// 	$endpoint->out($endpoint->model->get($request->segment(2)));
 // });
 
 $endpoint->get(['userId', 'testVar' => null], function($skeleton, $endpoint, $request) {
