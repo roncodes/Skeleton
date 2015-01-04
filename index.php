@@ -30,7 +30,7 @@ if (realpath($skeleton_path) !== FALSE) {
 $skeleton_path = rtrim($skeleton_path, '/').'/';
 // Is the skeleton path correct?
 if (!is_dir($skeleton_path)) {
-	exit('Your skeleton path does not appear to be set correctly. Please open the following file and correct this: ' . pathinfo(__FILE__, PATHINFO_BASENAME));
+	exit('Yo man yo skeleton path does not appear to be set correctly. Please open the following file and correct this: ' . pathinfo(__FILE__, PATHINFO_BASENAME));
 }
 
 /**
