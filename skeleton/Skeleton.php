@@ -7,11 +7,12 @@ class Skeleton {
         'entities',
         'formats'
     );
-    public $loadedBones = array();
-    public $endpoints = array();
-    public $libraries = array();
-    public $environment;
-    public $coreComponents = array();
+    private $loadedBones = array();
+    private $endpoints = array();
+    private $libraries = array();
+    private $models = array();
+    private $environment;
+    private $coreComponents = array();
 
     public function __construct() {
         // Autoload Dependencies & Helpers
@@ -33,7 +34,7 @@ class Skeleton {
         }
         // Run App
         $skeleton = $this;
-        include(SERVICE_PATH . 'endpoints/' . $this->router->output . EXT);
+        include(SERVICE_PATH . 'endpoints/' . $this->router->route . EXT);
     }
 
     public function addBones($boneDir) {

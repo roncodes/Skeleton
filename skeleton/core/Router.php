@@ -3,7 +3,7 @@ class Skeleton_Router {
 
 	public $skeleton;
 	public $request;
-	public $output;
+	public $route;
 	public $map = array();
 	public $default_endpoint;
 
@@ -30,10 +30,10 @@ class Skeleton_Router {
 		$currentUri = $this->skeleton->request->server('REQUEST_URI');
 		foreach($this->map as $uri => $endpoint) {
 			if($uri == $currentUri) {
-				$this->output = $endpoint;
+				$this->route = $endpoint;
 				return;
 			}
 		}
-		$this->output = $this->default_endpoint;
+		$this->route = $this->default_endpoint;
 	}
 }

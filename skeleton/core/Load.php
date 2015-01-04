@@ -23,4 +23,16 @@ class Skeleton_Load {
 		}
 		return false;
 	}
+
+	public function model($modelName) {
+		$file = SERVICE_PATH . 'models/' . $modelName . EXT;
+		if(file_exists($file)) {
+			list($filePath, $className) = [$file, basename($file, EXT)];
+			include $filePath;
+            $this->skeleton->{strtolower(basename($filePath, EXT))} = new $className;
+            $this->skeleton->models[] = new $className;
+            return true;
+		}
+		return false;
+	}
 }

@@ -13,6 +13,8 @@ class Skeleton_New {
 	 */
 	public function Endpoint($endpointName, $callback = null) {
 		$endpoint = new Endpoint_Entity($endpointName, $callback, $this->skeleton);
+		// save to skeleton
+		$this->skeleton->{'endpoint_'.$endpointName} = $endpoint;
 		return $endpoint;
 	}
 }

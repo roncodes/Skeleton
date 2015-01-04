@@ -25,7 +25,7 @@ class Skeleton_Request {
 	public function cookies() {}
 
 	public function server($property = null) {
-		return (isset($property)) ? $_SERVER[$property] : $_SERVER;
+		return ($property === null) ? $_SERVER : (isset($_SERVER[$property])) ? $_SERVER[$property] : false;
 	}
 
 	public function headers() {}
@@ -51,15 +51,15 @@ class Skeleton_Request {
 	public function method($is = null, $allow_override = true) {
         $method = $this->server('REQUEST_METHOD');
         // Override
-        if ($allow_override && $method === 'POST') {
-            // For legacy servers, override the HTTP method with the X-HTTP-Method-Override header or _method parameter
-            if ($this->server('X_HTTP_METHOD_OVERRIDE')) {
-                $method = $this->server('X_HTTP_METHOD_OVERRIDE');
-            } else {
-                $method = $this->param('_method', $method);
-            }
-            $method = strtoupper($method);
-        }
+        // if ($allow_override && $method === 'POST') {
+        //     // For legacy servers, override the HTTP method with the X-HTTP-Method-Override header or _method parameter
+        //     if ($this->server('X_HTTP_METHOD_OVERRIDE')) {
+        //         $method = $this->server('X_HTTP_METHOD_OVERRIDE');
+        //     } else {
+        //         $method = $this->param('_method', $method);
+        //     }
+        //     $method = strtoupper($method);
+        // }
         // We're doing a check
         if (null !== $is) {
             return strcasecmp($method, $is) === 0;
