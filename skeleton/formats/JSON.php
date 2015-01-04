@@ -3,8 +3,13 @@ class JSON {
 
 	public function __construct() {}
 
-	public static function out($data) {
+	public static function out($data, $val = null) {
 		header('Content-Type: application/json');
-		echo json_encode($data);
+		if($val !== null) {
+			// output as key value
+			echo json_encode(array($data => $val));
+		} else {
+			echo json_encode($data);
+		}
 	}
 }

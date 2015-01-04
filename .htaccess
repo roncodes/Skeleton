@@ -1,0 +1,8 @@
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+RewriteCond $1 !^(index\.php)
+RewriteRule ^(.*)$ index.php?endpoint=$1 [L]
+

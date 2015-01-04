@@ -3,17 +3,35 @@ class Skeleton_Router {
 
 	public $skeleton;
 	public $request;
-	public $route;
-	public $map = array();
-	public $default_endpoint;
+	private $endpointPath;
+	protected $route;
+	protected $path;
+	protected $method;
+	protected $map = array();
+	protected $defaultEndpoint;
 
 	public function __construct($skeleton) {
 		$this->skeleton = $skeleton;
-		$this->default_endpoint = 'test';
+		$this->request = $skeleton->request;
+		$this->endpointPath = SERVICE_PATH . 'endpoints/';
+		$this->defaultEndpoint = 'test';
 	}
 
-	public function request($property = null) {
-		return ($property !== null && property_exists($this->request, $property)) ? $this->request->{$property} : $this->request;
+	public function go() {
+		$route = $this->getFullRoute();
+		if(!file_exists($route)) {
+			throw new NoRouteFoundException('No route found', 1);	
+		}
+		$skeleton = $this->skeleton;
+		include $route;
+	}
+
+	public function getRoute() {
+		return $this->route;
+	}
+
+	public function getFullRoute() {
+		return $this->endpointPath . $this->getRoute() . EXT;
 	}
 
 	public function map(array $routes) {
@@ -22,18 +40,40 @@ class Skeleton_Router {
 		}
 	}
 
+	public function addToMap($route, $action) {
+		return $this->map[$route] = $action;
+	}
+
 	public function response($method, $uri, $callback) {
 		return $callback($this->request);
 	}
 
+	public function getUri() {
+		return str_replace('endpoint=', '', $this->request->server('QUERY_STRING'));
+	}
+
+	public function getUriSegments($index = null) {
+		$segments = explode('/', $this->getUri());
+		if($index !== null && isset($segments[$index])) {
+			return $segments[$index];
+		}
+		return $segments;
+	}
+
 	public function _onLoadFinish() {
-		$currentUri = $this->skeleton->request->server('REQUEST_URI');
+		$currentUri = $this->getUri();
 		foreach($this->map as $uri => $endpoint) {
+			if($uri == 'default') {
+				// set default endpoint
+				$this->defaultEndpoint = $endpoint;
+			}
 			if($uri == $currentUri) {
 				$this->route = $endpoint;
 				return;
 			}
 		}
-		$this->route = $this->default_endpoint;
+		if($currentUri == '/' || $currentUri == '' || $currentUri == $this->defaultEndpoint) {
+			$this->route = $this->defaultEndpoint;
+		}
 	}
 }

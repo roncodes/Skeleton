@@ -3,5 +3,6 @@
  * Route Config
  */
 $config->route(array(
-	'/skeleton/' => 'test'
+	'default' => 'welcome',
+	'users' => 'users'
 ));

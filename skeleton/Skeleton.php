@@ -5,7 +5,8 @@ class Skeleton {
         'dependencies',
         'helpers',
         'entities',
-        'formats'
+        'formats',
+        'exceptions'
     );
     private $loadedBones = array();
     private $endpoints = array();
@@ -33,8 +34,13 @@ class Skeleton {
             }
         }
         // Run App
-        $skeleton = $this;
-        include(SERVICE_PATH . 'endpoints/' . $this->router->route . EXT);
+        try {
+            $this->router->go();
+        } catch(NoRouteFoundException $e) {
+            JSON::out('error', $e->getMessage());
+        } catch(Exception $e) {
+            JSON::out('error', $e->getMessage());
+        }
     }
 
     public function addBones($boneDir) {

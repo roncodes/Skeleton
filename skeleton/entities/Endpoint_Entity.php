@@ -1,11 +1,13 @@
 <?php
 class Endpoint_Entity {
 
-	public $name;
-	public $dbTable;
+	private $name;
+	private $dbTable;
+	private $file;
 	public $model;
 	public $load;
 	public $factoryOutputCalled = false;
+	public $activeParams;
 	private $outputFormat = 'json';
 	private $callback;
 	private $skeleton;
@@ -13,11 +15,26 @@ class Endpoint_Entity {
 	private $models;
 
 	public function __construct($endpointName, $callback, Skeleton $skeleton) {
+		$this->name = $endpointName;
+		$this->file = strtolower(str_replace(array(EXT, SERVICE_PATH . 'endpoints'), '', $skeleton->request->server('PHP_SELF')));
+		echo $this->file;
+		exit;
 		$this->callback = $callback;
 		$this->skeleton = $skeleton;
 		$this->load = new Skeleton_Load($this);
 		// Check if endpoint name has a table match
 		// @todo
+	}
+
+	public function __get($param) {
+		if(array_key_exists($param, $this->activeParams)) {
+			return $this->activeParams[$param];
+		}
+		return false;
+	}
+
+	public function __set($param, $value) {
+		return $this->activeParams[$param] = $value;
 	}
 
 	public function __destruct() {
@@ -29,9 +46,17 @@ class Endpoint_Entity {
 
 	public function get($uri, $callback = null) {
 		if($this->skeleton->request->method() != 'GET') return;
+		if(is_array($uri)) {
+			// extract params into callback
+			$this->makeParams($uri);
+			return $callback($this->skeleton, $this, $this->skeleton->request);
+		}
 		if(is_callable($uri)) {
+			// add uri to map
+			$this->skeleton->router->addToMap($this->name, $this->file);
 			return $uri($this->skeleton, $this, $this->skeleton->request);
 		}
+		$this->skeleton->router->addToMap($this->name . '/' . $uri, $this->file);
 		return $callback($this->skeleton, $this, $this->skeleton->request);
 	}
 
@@ -82,10 +107,22 @@ class Endpoint_Entity {
 		return $this;
 	}
 
-	public function getAll() {
-		$all = R::findAll($this->dbTable);
-		$this->out(R::exportAll($all));
-		return $all;
+	public function makeParams($requestParams = array()) {
+		$segments = $this->skeleton->router->getUriSegments();
+		$params = array();
+		$i = 1;
+		foreach($requestParams as $param => $val) {
+			if(is_numeric($param)) {
+				// no default value set
+				$params[$val] = (isset($segments[$i])) ? $segments[$i] : null;
+			} else {
+				// default value set
+				$params[$param] = (isset($segments[$i])) ? $segments[$i] : $val;
+			}
+			$i++;
+		}
+		$this->activeParams = $params;
+		return $params;
 	}
 
 	public function out($data) {
