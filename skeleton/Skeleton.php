@@ -35,7 +35,8 @@ class Skeleton {
         }
         // Run App
         try {
-            $this->router->go();
+            $skeleton = $this;
+            include $this->router->go();
         } catch(NoRouteFoundException $e) {
             JSON::out('error', $e->getMessage());
         } catch(Exception $e) {

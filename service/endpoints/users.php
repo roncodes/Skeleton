@@ -12,6 +12,8 @@ $endpoint = $skeleton->new->Endpoint('users')->setTable('users');
 // 	$endpoint->out($endpoint->model->get($request->segment(2)));
 // });
 
-$endpoint->get(['userId', 'testVar' => null], function($skeleton, $endpoint, $request) {
-	$endpoint->out($endpoint->userId);
+$endpoint->get(['userId', 'testVar' => 'Hello World'], function($e) {
+	$e->load->model('User_Model', 'users');
+	$users = $e->users->get($e->userId);
+	var_dump($users);
 });

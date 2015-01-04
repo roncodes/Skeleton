@@ -11,14 +11,12 @@ class Endpoint_Entity {
 	private $outputFormat = 'json';
 	private $callback;
 	private $skeleton;
-	private $libraries;
-	private $models;
+	private $libraries = array();
+	private $models = array();
 
 	public function __construct($endpointName, $callback, Skeleton $skeleton) {
 		$this->name = $endpointName;
 		$this->file = strtolower(str_replace(array(EXT, SERVICE_PATH . 'endpoints'), '', $skeleton->request->server('PHP_SELF')));
-		echo $this->file;
-		exit;
 		$this->callback = $callback;
 		$this->skeleton = $skeleton;
 		$this->load = new Skeleton_Load($this);
@@ -26,15 +24,14 @@ class Endpoint_Entity {
 		// @todo
 	}
 
-	public function __get($param) {
+	public function &__get($param) {
 		if(array_key_exists($param, $this->activeParams)) {
 			return $this->activeParams[$param];
 		}
+		if(property_exists($this, $param)) {
+			return $this->{$param};
+		}
 		return false;
-	}
-
-	public function __set($param, $value) {
-		return $this->activeParams[$param] = $value;
 	}
 
 	public function __destruct() {
@@ -49,7 +46,7 @@ class Endpoint_Entity {
 		if(is_array($uri)) {
 			// extract params into callback
 			$this->makeParams($uri);
-			return $callback($this->skeleton, $this, $this->skeleton->request);
+			return $callback($this);
 		}
 		if(is_callable($uri)) {
 			// add uri to map

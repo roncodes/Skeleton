@@ -22,8 +22,7 @@ class Skeleton_Router {
 		if(!file_exists($route)) {
 			throw new NoRouteFoundException('No route found', 1);	
 		}
-		$skeleton = $this->skeleton;
-		include $route;
+		return $route;
 	}
 
 	public function getRoute() {
