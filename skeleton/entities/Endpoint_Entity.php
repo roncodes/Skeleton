@@ -7,6 +7,7 @@ class Endpoint_Entity {
 	public $model;
 	public $load;
 	public $factoryOutputCalled = false;
+	public $urisCalled = array();
 	public $activeParams = array();
 	private $outputFormat = 'json';
 	private $callback;
@@ -35,9 +36,9 @@ class Endpoint_Entity {
 	}
 
 	public function __destruct() {
-		if(!$this->factoryOutputCalled && is_callable($this->callback) && $this->skeleton->router->getPreloadFlag() == false) {
+		if(!$this->factoryOutputCalled && is_callable($this->callback)) {
 			// run the users callback
-			// call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
+			call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
 		}
 	}
 
@@ -54,6 +55,10 @@ class Endpoint_Entity {
 		if($this->skeleton->request->method() != 'GET') return;
 		// make sure URI is valid
 		if(!$this->skeleton->router->routeMatch($madeUri, $this->skeleton->router->getUri())) return;
+		// make sure its not a duplicate request
+		if(in_array($madeUri, $this->urisCalled)) return;
+		// continue!
+		$this->urisCalled[] = str_replace($this->skeleton->router->getRoutePatternKeys(), ':any', $madeUri);
 		if(is_array($uri)) {
 			return $callback($this);
 		}
@@ -140,7 +145,7 @@ class Endpoint_Entity {
 	private function _makeUri($uri = null) {
 		$uriString = $this->name;
 		if(is_array($uri)) {
-			foreach($params as $p) {
+			foreach($uri as $p) {
 				if(is_string($p) && strlen($p) > 0) {
 					$uriString .= '/:any';
 				}

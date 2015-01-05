@@ -4,5 +4,5 @@
  */
 $config->route(array(
 	'default' => 'welcome',
-	// 'users' => 'users'
+	'happyday/hello/:any' => 'users'
 ));

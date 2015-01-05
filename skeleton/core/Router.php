@@ -24,7 +24,7 @@ class Skeleton_Router {
 	}
 
 	public function go() {
-		$route = $this->getFullRoute();
+		$route = $this->getRoute();
 		if(!file_exists($route)) {
 			throw new NoRouteFoundException('No route found', 1);	
 		}
@@ -33,10 +33,6 @@ class Skeleton_Router {
 
 	public function getRoute() {
 		return $this->route;
-	}
-
-	public function getFullRoute() {
-		return $this->endpointPath . $this->getRoute() . EXT;
 	}
 
 	public function map(array $routes = array()) {
@@ -103,10 +99,22 @@ class Skeleton_Router {
 		return false;
 	}
 
+	public function getRoutePatterns() {
+		return $this->routePatterns;
+	}
+
+	public function getRoutePatternKeys() {
+		return array_keys($this->routePatterns);
+	}
+
 	public function _onLoadFinish() {
 		$currentUri = $this->getUri();
 		$this->_preloadRun();
 		foreach($this->map as $uri => $endpoint) {
+			if($uri == 'default' && $currentUri == '') {
+				$this->route = $this->_getRouteEndpointFile($endpoint);
+				return;
+			}
 			if($uri == 'default') {
 				$this->defaultEndpoint = $endpoint;
 				continue;
@@ -119,6 +127,7 @@ class Skeleton_Router {
 		if($currentUri == '/' || $currentUri == '' || $currentUri == $this->defaultEndpoint) {
 			$this->route = $this->defaultEndpoint;
 		}
+		exit;
 	}
 
 	public function routeMatch($routePattern, $realUri) {
@@ -147,11 +156,12 @@ class Skeleton_Router {
 		if(count($uriSegments) > 1 || $endpoint !== null) {
 			$uriSegments = ($endpoint == null) ? $uriSegments : explode('/', $endpoint);
 			// find file
+			$endpointsDir = new RecursiveDirectoryIterator(SERVICE_PATH . 'endpoints');
 			foreach($uriSegments as $segment) {
-				$file = File_Helper::searchDirectory($segment, SERVICE_PATH . 'endpoints');
-				if(!is_dir(current($file))) {
-					$endpointFile = key($file);
-					break;
+				foreach (new RecursiveIteratorIterator($endpointsDir) as $file) {
+					if (is_file($file) && strpos(basename($file), EXT) !== false && basename($file, EXT) == $segment) {
+						$endpointFile = $file;
+					}
 				}
 			}
 		} else {

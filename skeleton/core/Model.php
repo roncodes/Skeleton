@@ -5,7 +5,11 @@ class Skeleton_Model {
 	protected $primaryKey = 'id';
 
 	public function __construct($table = null) {
-		$this->_fetchTable();
+		if($table !== null) {
+			$this->_setTable($table);
+		} else {
+			$this->_fetchTable();
+		}
 	}
 
 	public function _setTable($table = null) {

@@ -15,10 +15,15 @@ class Skeleton_New {
 		if(is_callable($endpointName)) {
 			// endpointName is callback, generate a id for endpoint at time of use
 			$callback = $endpointName;
-			$endpointName = md5(time());
+			$trace = debug_backtrace();
+			$endpointName = basename($trace[0]['file'], EXT);
+			$this->skeleton->router->addToMap($endpointName, $endpointName);
 		}
 		if(!is_string($endpointName)) {
 			return false;
+		}
+		if($this->skeleton->router->getPreloadFlag() == true) {
+			$callback = false;
 		}
 		$endpoint = new Endpoint_Entity($endpointName, $callback, $this->skeleton);
 		// save to skeleton

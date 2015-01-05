@@ -40,6 +40,7 @@ class Skeleton {
         }
         // Preload stuff is over
         $this->router->setPreloadFlag(false);
+        // echo $this->router->getFullRoute();
         // Run App
         try {
             $skeleton = $this;
