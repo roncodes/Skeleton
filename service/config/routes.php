@@ -4,5 +4,5 @@
  */
 $config->route(array(
 	'default' => 'welcome',
-	'users' => 'users'
+	// 'users' => 'users'
 ));

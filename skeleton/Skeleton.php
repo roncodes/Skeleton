@@ -38,6 +38,8 @@ class Skeleton {
         if(!$this->environment) {
             exit(JSON::out('error', 'No environment set!'));
         }
+        // Preload stuff is over
+        $this->router->setPreloadFlag(false);
         // Run App
         try {
             $skeleton = $this;
@@ -65,6 +67,7 @@ class Skeleton {
             }
         }
     }
+
 }
 
 $skeleton = new Skeleton();

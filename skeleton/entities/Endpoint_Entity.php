@@ -7,7 +7,7 @@ class Endpoint_Entity {
 	public $model;
 	public $load;
 	public $factoryOutputCalled = false;
-	public $activeParams;
+	public $activeParams = array();
 	private $outputFormat = 'json';
 	private $callback;
 	private $skeleton;
@@ -16,7 +16,7 @@ class Endpoint_Entity {
 
 	public function __construct($endpointName, $callback, Skeleton $skeleton) {
 		$this->name = $endpointName;
-		$this->file = strtolower(str_replace(array(EXT, SERVICE_PATH . 'endpoints'), '', $skeleton->request->server('PHP_SELF')));
+		$this->file = $this->_getEndpointFile();
 		$this->callback = $callback;
 		$this->skeleton = $skeleton;
 		$this->load = new Skeleton_Load($this);
@@ -35,25 +35,31 @@ class Endpoint_Entity {
 	}
 
 	public function __destruct() {
-		if(!$this->factoryOutputCalled && is_callable($this->callback)) {
+		if(!$this->factoryOutputCalled && is_callable($this->callback) && $this->skeleton->router->getPreloadFlag() == false) {
 			// run the users callback
-			call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
+			// call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
 		}
 	}
 
+	private function _getEndpointFile() {
+		$trace = debug_backtrace();
+		return strtolower(str_replace(array(EXT, SERVICE_PATH . 'endpoints'), '', basename($trace[2]['file'])));
+	}
+
 	public function get($uri, $callback = null) {
+		$madeUri = $this->_makeUri($uri);
+		$this->skeleton->router->addToMap($madeUri, $this->file);
+		$this->_makeParams($uri);
+		if($this->skeleton->router->getPreloadFlag() == true) return;
 		if($this->skeleton->request->method() != 'GET') return;
+		// make sure URI is valid
+		if(!$this->skeleton->router->routeMatch($madeUri, $this->skeleton->router->getUri())) return;
 		if(is_array($uri)) {
-			// extract params into callback
-			$this->makeParams($uri);
 			return $callback($this);
 		}
 		if(is_callable($uri)) {
-			// add uri to map
-			$this->skeleton->router->addToMap($this->name, $this->file);
 			return $uri($this, $this->skeleton, $this->skeleton->request);
 		}
-		$this->skeleton->router->addToMap($this->name . '/' . $uri, $this->file);
 		return $callback($this, $this->skeleton, $this->skeleton->request);
 	}
 
@@ -104,8 +110,17 @@ class Endpoint_Entity {
 		return $this;
 	}
 
-	public function makeParams($requestParams = array()) {
+	private function _makeParams($requestParams = array()) {
 		$segments = $this->skeleton->router->getUriSegments();
+		if(is_string($requestParams)) {
+			$requestParams = explode('/', $requestParams);
+			foreach($requestParams as $index => $param) {
+				if(is_string($param) && strpos($param, ':') !== false) {
+					$param = ($index == 0) ? str_replace(':', '', $param) : str_replace(':', '', $param.$index);
+					$requestParams[$index] = $param;
+				}
+			}
+		}
 		$params = array();
 		$i = 1;
 		foreach($requestParams as $param => $val) {
@@ -120,6 +135,22 @@ class Endpoint_Entity {
 		}
 		$this->activeParams = $params;
 		return $params;
+	}
+
+	private function _makeUri($uri = null) {
+		$uriString = $this->name;
+		if(is_array($uri)) {
+			foreach($params as $p) {
+				if(is_string($p) && strlen($p) > 0) {
+					$uriString .= '/:any';
+				}
+			}
+		} elseif (is_callable($uri)) {
+			// do nothing
+		} elseif (is_string($uri)) {
+			$uriString .= '/' . $uri;
+		}
+		return $uriString;
 	}
 
 	public function out($data) {

@@ -2,14 +2,10 @@
 /**
  * The test endpoint for USERS
  */
-$endpoint = $skeleton->new->Endpoint('users');
-
-$endpoint->get(function() {
-	echo 'Yolo!';
-});
+$endpoint = $skeleton->new->Endpoint('yolo');
 
 $endpoint->get(':id', function($e) {
-	var_dump($e->id);
+	var_dump($e->skeleton->router->map());
 });
 
 // $endpoint->get(function($skeleton, $endpoint, $request) {
