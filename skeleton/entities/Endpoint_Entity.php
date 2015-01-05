@@ -93,7 +93,7 @@ class Endpoint_Entity {
 	}
 
 	public function setModel($tableName = null) {
-		// $this->model = new Skeleton_Model()
+		$this->model = new Skeleton_Model($tableName);
 	}
 
 	public function setTable($tableName) {
