@@ -37,7 +37,7 @@ class Endpoint_Entity {
 	public function __destruct() {
 		if(!$this->factoryOutputCalled && is_callable($this->callback)) {
 			// run the users callback
-			call_user_func($this->callback, $this->skeleton, $this, $this->skeleton->request);
+			call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
 		}
 	}
 
@@ -51,10 +51,10 @@ class Endpoint_Entity {
 		if(is_callable($uri)) {
 			// add uri to map
 			$this->skeleton->router->addToMap($this->name, $this->file);
-			return $uri($this->skeleton, $this, $this->skeleton->request);
+			return $uri($this, $this->skeleton, $this->skeleton->request);
 		}
 		$this->skeleton->router->addToMap($this->name . '/' . $uri, $this->file);
-		return $callback($this->skeleton, $this, $this->skeleton->request);
+		return $callback($this, $this->skeleton, $this->skeleton->request);
 	}
 
 	public function post($uri, $callback = null) {

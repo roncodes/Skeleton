@@ -33,6 +33,11 @@ class Skeleton {
                 $this->{$component}->_onLoadFinish();
             }
         }
+        // Set environment
+        $this->environment = ENVIRONMENT;
+        if(!$this->environment) {
+            exit(JSON::out('error', 'No environment set!'));
+        }
         // Run App
         try {
             $skeleton = $this;
