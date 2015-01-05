@@ -18,16 +18,11 @@ class Skeleton_New {
 			$trace = debug_backtrace();
 			$endpointName = basename($trace[0]['file'], EXT);
 			$this->skeleton->router->addToMap($endpointName, $endpointName);
+			// $this->skeleton->router->addToMap('', $endpointName);
 		}
 		if(!is_string($endpointName)) {
 			return false;
 		}
-		if($this->skeleton->router->getPreloadFlag() == true) {
-			$callback = false;
-		}
-		$endpoint = new Endpoint_Entity($endpointName, $callback, $this->skeleton);
-		// save to skeleton
-		$this->skeleton->{'endpoint_'.$endpointName} = $endpoint;
-		return $endpoint;
+		return $endpoint = $this->skeleton->{'endpoint_'.$endpointName} = $this->skeleton->endpoints[] = new Endpoint_Entity($endpointName, $callback, $this->skeleton);
 	}
 }

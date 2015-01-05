@@ -1,14 +1,15 @@
 <?php
 class Endpoint_Entity {
 
-	private $name;
+	public $name;
+	public $dud = null;
 	private $dbTable;
 	private $file;
 	public $model;
 	public $load;
 	public $factoryOutputCalled = false;
-	public $urisCalled = array();
 	public $activeParams = array();
+	public $baseUri;
 	private $outputFormat = 'json';
 	private $callback;
 	private $skeleton;
@@ -21,8 +22,7 @@ class Endpoint_Entity {
 		$this->callback = $callback;
 		$this->skeleton = $skeleton;
 		$this->load = new Skeleton_Load($this);
-		// Check if endpoint name has a table match
-		// @todo
+		$this->baseUri = $this->_makeUri();
 	}
 
 	public function &__get($param) {
@@ -32,11 +32,16 @@ class Endpoint_Entity {
 		if(property_exists($this, $param)) {
 			return $this->{$param};
 		}
-		return false;
+		return $this->dud;
 	}
 
 	public function __destruct() {
-		if(!$this->factoryOutputCalled && is_callable($this->callback)) {
+		if($this->file != basename($this->skeleton->router->getRoute(), EXT)) return;
+		// make sure this request method type hasn't ran already
+		if(isset($this->skeleton->callStack[$this->skeleton->request->method()])) return;
+		// Add to call Array
+		$this->skeleton->callStack[$this->skeleton->request->method()] = str_replace($this->skeleton->router->getRoutePatternKeys(), '{var}', $this->baseUri);
+		if(!$this->factoryOutputCalled && is_callable($this->callback) && !$this->requestEnded) {
 			// run the users callback
 			call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
 		}
@@ -50,15 +55,15 @@ class Endpoint_Entity {
 	public function get($uri, $callback = null) {
 		$madeUri = $this->_makeUri($uri);
 		$this->skeleton->router->addToMap($madeUri, $this->file);
-		$this->_makeParams($uri);
 		if($this->skeleton->router->getPreloadFlag() == true) return;
+		$this->_makeParams($uri);
 		if($this->skeleton->request->method() != 'GET') return;
 		// make sure URI is valid
 		if(!$this->skeleton->router->routeMatch($madeUri, $this->skeleton->router->getUri())) return;
 		// make sure its not a duplicate request
-		if(in_array($madeUri, $this->urisCalled)) return;
+		if(in_array($madeUri, $this->skeleton->callStack)) return;
 		// continue!
-		$this->urisCalled[] = str_replace($this->skeleton->router->getRoutePatternKeys(), ':any', $madeUri);
+		$this->skeleton->callStack['GET'] = str_replace($this->skeleton->router->getRoutePatternKeys(), '{var}', $madeUri);
 		if(is_array($uri)) {
 			return $callback($this);
 		}
@@ -108,11 +113,12 @@ class Endpoint_Entity {
 	public function factoryOutput() {
 		// run default output -- GET, POST, PUT, DELETE Factory stuff
 		$this->factoryOutputCalled = true;
-		if($this->skeleton->request->method() == 'GET') {
-			$all = R::findAll($this->dbTable);
-			$this->out(R::exportAll($all));
-		}
-		return $this;
+		// run factory stuff on destruct
+		// if($this->skeleton->request->method() == 'GET') {
+		// 	$all = R::findAll($this->dbTable);
+		// 	$this->out(R::exportAll($all));
+		// }
+		// return $this;
 	}
 
 	private function _makeParams($requestParams = array()) {

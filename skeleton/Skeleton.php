@@ -9,11 +9,12 @@ class Skeleton {
         'exceptions'
     );
     private $loadedBones = array();
-    private $endpoints = array();
+    public $endpoints = array();
     private $libraries = array();
     private $models = array();
     private $environment;
     private $coreComponents = array();
+    public $callStack = array();
 
     public function __construct() {
         // Autoload Dependencies & Helpers
@@ -44,10 +45,18 @@ class Skeleton {
         try {
             $skeleton = $this;
             include $this->router->go();
+            // the end
+            die();
         } catch(NoRouteFoundException $e) {
-            JSON::out('error', $e->getMessage());
+            // JSON::out(array(
+            //     'status' => 'error', 
+            //     'message' => $e->getMessage()
+            // ));
         } catch(Exception $e) {
-            JSON::out('error', $e->getMessage());
+            // JSON::out(array(
+            //     'status' => 'error', 
+            //     'message' => $e->getMessage()
+            // ));
         }
     }
 

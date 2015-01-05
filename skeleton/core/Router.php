@@ -5,13 +5,14 @@ class Skeleton_Router {
 	public $request;
 	private $endpointPath;
 	private $preloadFlag = false;
-	protected $route;
+	protected $route = null;
 	protected $path;
 	protected $method;
 	protected $map = array();
 	protected $defaultEndpoint;
 	protected $routePatterns = array(
 		':id' => '/([0-9]+)/',
+		':int' => '/([0-9]+)/',
 		':uuid' => '/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/',
 		':any' => '/.*/'
 	);
@@ -26,7 +27,7 @@ class Skeleton_Router {
 	public function go() {
 		$route = $this->getRoute();
 		if(!file_exists($route)) {
-			throw new NoRouteFoundException('No route found', 1);	
+			throw new NoRouteFoundException('Method does not exist', 1);	
 		}
 		return $route;
 	}
@@ -111,11 +112,11 @@ class Skeleton_Router {
 		$currentUri = $this->getUri();
 		$this->_preloadRun();
 		foreach($this->map as $uri => $endpoint) {
-			if($uri == 'default' && $currentUri == '') {
+			if(($uri == 'default' && $currentUri == '') || ($uri == '/' && $currentUri == '') || ($uri == '' && $currentUri == '')) {
 				$this->route = $this->_getRouteEndpointFile($endpoint);
 				return;
 			}
-			if($uri == 'default') {
+			if(($uri == 'default') || ($uri == '/') || ($uri == '')) {
 				$this->defaultEndpoint = $endpoint;
 				continue;
 			}
@@ -127,7 +128,6 @@ class Skeleton_Router {
 		if($currentUri == '/' || $currentUri == '' || $currentUri == $this->defaultEndpoint) {
 			$this->route = $this->defaultEndpoint;
 		}
-		exit;
 	}
 
 	public function routeMatch($routePattern, $realUri) {
@@ -138,7 +138,7 @@ class Skeleton_Router {
 		if(count($realUriSegments) != count($routePatternSegments)) return false;
 		foreach($realUriSegments as $segment) {
 			// see if route pattern segment is regex based
-			if(isset($routePatternSegments[$index]) && $routePatternSegments[$index][0] == ':') {
+			if(!empty($routePatternSegments[$index]) && is_string($routePatternSegments[$index]) && $routePatternSegments[$index][0] == ':') {
 				// see if pattern is legal
 				preg_match($this->_getRoutePattern($routePatternSegments[$index]), $segment, $matches);
 				if(!count($matches)) return false;
