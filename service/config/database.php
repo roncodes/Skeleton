@@ -4,7 +4,7 @@
  */
 
 // Types can be mysql, pgsql, sqlite, and cubrid
-$config->database('sutracampDb:development', array(
+$config->database('testDb:development', array(
 	'type' => 'mysql',
 	'port' => 3306,
 	'host' => 'localhost',

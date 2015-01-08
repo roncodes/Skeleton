@@ -159,7 +159,12 @@ class Endpoint_Entity {
 		} elseif (is_callable($uri)) {
 			// do nothing
 		} elseif (is_string($uri)) {
-			$uriString .= '/' . $uri;
+			if(strpos($uri, '?') !== false) {
+				list($uri, $qString) = explode('?', $uri);
+				$uriString .= (strlen($uri)) ? '/' . $uri . '?' . $qString : '?' . $qString;
+			} else {
+				$uriString .= '/' . $uri;
+			}
 		}
 		return $uriString;
 	}

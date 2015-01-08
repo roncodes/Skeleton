@@ -9,7 +9,7 @@ class Skeleton_Router {
 	protected $path;
 	protected $method;
 	protected $map = array();
-	protected $defaultEndpoint;
+	protected $defaultEndpoint = null;
 	protected $routePatterns = array(
 		':id' => '/([0-9]+)/',
 		':int' => '/([0-9]+)/',
@@ -21,7 +21,6 @@ class Skeleton_Router {
 		$this->skeleton = $skeleton;
 		$this->request = $skeleton->request;
 		$this->endpointPath = SERVICE_PATH . 'endpoints/';
-		$this->defaultEndpoint = 'test';
 	}
 
 	public function go() {
@@ -54,7 +53,16 @@ class Skeleton_Router {
 	}
 
 	public function getUri() {
-		return str_replace('endpoint=', '', $this->request->server('QUERY_STRING'));
+		return str_replace($this->getAppBase(), '', $this->request->server('REQUEST_URI'));
+	}
+
+	public function getQueryString() {
+		return  $this->request->server('QUERY_STRING');
+	}
+
+	public function getAppBase() {
+		$scriptName = $this->request->server('SCRIPT_NAME');
+		return str_replace('index.php', '', $scriptName);
 	}
 
 	public function getUriSegments($index = null) {
@@ -128,26 +136,44 @@ class Skeleton_Router {
 		if($currentUri == '/' || $currentUri == '' || $currentUri == $this->defaultEndpoint) {
 			$this->route = $this->defaultEndpoint;
 		}
+		exit;
 	}
 
 	public function routeMatch($routePattern, $realUri) {
 		// for example: patten: users/:id -> users/1
 		$routePatternSegments = explode('/', $routePattern);
 		$realUriSegments = explode('/', $realUri);
+		$checkedPatterns = array();
 		$index = 0;
 		if(count($realUriSegments) != count($routePatternSegments)) return false;
 		foreach($realUriSegments as $segment) {
 			// see if route pattern segment is regex based
-			if(!empty($routePatternSegments[$index]) && is_string($routePatternSegments[$index]) && $routePatternSegments[$index][0] == ':') {
-				// see if pattern is legal
-				preg_match($this->_getRoutePattern($routePatternSegments[$index]), $segment, $matches);
-				if(!count($matches)) return false;
+			if(!empty($routePatternSegments[$index]) && is_string($routePatternSegments[$index]) && strpos($routePatternSegments[$index], ':') !== false) {
+				$foundRouterPatterns = $this->_extractRoutePatterns($routePatternSegments[$index]);
+				$foundRouterPatterns = array_slice($foundRouterPatterns, count($checkedPatterns));
+				foreach ($foundRouterPatterns as $pattern) {
+					// see if pattern is legal
+					preg_match($this->_getRoutePattern($pattern), $segment, $matches);
+					if(!count($matches)) return false;
+					$checkedPatterns[] = $pattern;
+				}
 			} else {
 				if(isset($routePatternSegments[$index]) && $segment !== $routePatternSegments[$index]) return false;
 			}
 			$index++;
 		}
 		return true;
+	}
+
+	private function _extractRoutePatterns($pattern) {
+		$patternsFound = array();
+		$matches = explode(':', $pattern);
+		foreach($matches as $match) {
+			foreach($this->getRoutePatternKeys() as $pattern) {
+				if(strpos($match, str_replace(':', '', $pattern)) !== false) $patternsFound[] = $pattern;
+			}
+		}
+		return $patternsFound;
 	}
 
 	private function _getRouteEndpointFile($endpoint = null) {

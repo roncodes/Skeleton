@@ -48,15 +48,15 @@ class Skeleton {
             // the end
             die();
         } catch(NoRouteFoundException $e) {
-            // JSON::out(array(
-            //     'status' => 'error', 
-            //     'message' => $e->getMessage()
-            // ));
+            JSON::out(array(
+                'status' => 'error', 
+                'message' => $e->getMessage()
+            ));
         } catch(Exception $e) {
-            // JSON::out(array(
-            //     'status' => 'error', 
-            //     'message' => $e->getMessage()
-            // ));
+            JSON::out(array(
+                'status' => 'error', 
+                'message' => $e->getMessage()
+            ));
         }
     }
 

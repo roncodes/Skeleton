@@ -25,7 +25,10 @@ class Skeleton_Request {
 	public function cookies() {}
 
 	public function server($property = null) {
-		return ($property === null) ? $_SERVER : (isset($_SERVER[$property])) ? $_SERVER[$property] : false;
+		if($property === null) { 
+			return $_SERVER;
+		}
+		return (isset($_SERVER[$property])) ? $_SERVER[$property] : false;
 	}
 
 	public function headers() {}
