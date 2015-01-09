@@ -46,7 +46,6 @@ class Endpoint_Entity {
 			call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
 		} else {
 			// FACTORY OUTPUT
-			echo 'here?';
 			$args = explode('/', $this->skeleton->router->getUri());
 			$method = (isset($args[0])) ? $args[0] : $this->file;
 			$id = (isset($args[1])) ? $args[1] : false;
@@ -71,9 +70,39 @@ class Endpoint_Entity {
 						));
 					}
 					break;
+
+				case 'POST':
+					if($id) {
+						$this->out(array(
+							'status' => 'error',
+							'message' => 'Nothing to do'
+						));
+					} else {
+						// create row
+					}
+					break;
+
+				case 'PUT':
+					if($id) {
+						// update row
+					} else {
+						// do nothing
+					}
+					break;
+
+				case 'DELETE':
+					if($id) {
+						// delete row
+					} else {
+						// do nothing
+					}
+					break;
 				
 				default:
-					# code...
+					$this->out(array(
+						'status' => 'error',
+						'message' => 'Invalid request'
+					));
 					break;
 			}
 		}
@@ -195,7 +224,9 @@ class Endpoint_Entity {
 		// GET: /all/:id, PUT: /all/:id, DELETE: /all/:id
 		$this->skeleton->router->addToMap($this->name . '/:id', $this->file);
 		// ALL ELSE
-		$this->skeleton->router->addToMap($this->skeleton->router->getUri(), $this->file);
+		if(strpos($this->skeleton->router->getUri(), $this->name) !== false) {
+			$this->skeleton->router->addToMap($this->skeleton->router->getUri(), $this->file);
+		}
 	}
 
 	private function _makeParams($requestParams = array()) {

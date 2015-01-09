@@ -136,7 +136,6 @@ class Skeleton_Router {
 		if($currentUri == '/' || $currentUri == '' || $currentUri == $this->defaultEndpoint) {
 			$this->route = $this->defaultEndpoint;
 		}
-		exit;
 	}
 
 	public function routeMatch($routePattern, $realUri) {

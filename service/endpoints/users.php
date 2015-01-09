@@ -4,22 +4,22 @@
  */
 $endpoint = $skeleton->new->Endpoint('users')->setTable('users')->factoryOutput();
 
-/**
- * GET: /users
- * @return JSON of All Users
- */
-$endpoint->get(function($e, $skeleton) {
-	echo 'yolo';
-});
-
 // /**
-//  * GET: /users/:userId
-//  * @return JSON of User by ID
+//  * GET: /users
+//  * @return JSON of All Users
 //  */
-// $endpoint->get(['userId'], function($e) {
-// 	$user = $e->model->get($e->userId);
-// 	$e->out($user);
+// $endpoint->get(function($e, $skeleton) {
+// 	echo 'yolo';
 // });
+
+/**
+ * GET: /users/:userId
+ * @return JSON of User by ID
+ */
+$endpoint->get(['userId'], function($e) {
+	$user = $e->model->get($e->userId);
+	$e->outputAs('xml')->out($user);
+});
 
 // /**
 //  * GET: /users?userId=

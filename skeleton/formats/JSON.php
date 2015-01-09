@@ -11,5 +11,6 @@ class JSON {
 		} else {
 			echo json_encode($data);
 		}
+		return json_encode($data);
 	}
 }
