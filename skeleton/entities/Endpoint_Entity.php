@@ -1,21 +1,114 @@
 <?php
 class Endpoint_Entity {
 
+	/**
+	 * Endpoint entity properties
+	 */
+
+	/**
+	 * The endpoint name
+	 * 
+	 * @var string
+	 */
 	public $name;
-	public $dud = null;
+
+	/**
+	 * Returned for properties that don't exist
+	 * 
+	 * @var boolean
+	 */
+	public $dud = false;
+
+	/**
+	 * The database table the endpoint operates with
+	 * 
+	 * @var string
+	 */
 	private $dbTable;
+
+	/**
+	 * The endpoint file
+	 * @var string
+	 */
 	private $file;
+
+	/**
+	 * The dynamic model created from the endpoint table
+	 * 
+	 * @var Skeleton_Model
+	 */
 	public $model;
+
+	/**
+	 * The Skeleton loader, used to load things to this endpoint entity
+	 * 
+	 * @var Skeleton_Load
+	 */
 	public $load;
+
+	/**
+	 * Determines if the factory output method has been called
+	 * 
+	 * @var boolean
+	 */
 	public $factoryOutputCalled = false;
+
+	/**
+	 * Array of parameters created from routes
+	 * 
+	 * @var array
+	 */
 	public $activeParams = array();
+
+	/**
+	 * The baseUri is the base route for the endpoint
+	 * 
+	 * @var string
+	 */
 	public $baseUri;
+
+	/**
+	 * The format to output in
+	 * 
+	 * @var string
+	 */
 	private $outputFormat = 'json';
+
+	/**
+	 * The callback to run during request
+	 * 
+	 * @var closure
+	 */
 	private $callback;
+
+	/**
+	 * Autoload skeleton into the endpoint
+	 * 
+	 * @var Skeleton
+	 */
 	private $skeleton;
+
+	/**
+	 * Array of libraries loaded into endpoint
+	 * 
+	 * @var array
+	 */
 	private $libraries = array();
+
+	/**
+	 * Array of models loaded into endpoint
+	 * 
+	 * @var array
+	 */
 	private $models = array();
 
+	/**
+	 * Construct the endpoint entity
+	 * 
+	 * @param string   $endpointName Name of the endpoint
+	 * @param closure  $callback     Callback to run on request
+	 * @param Skeleton $skeleton     The skeleton framework
+	 */
 	public function __construct($endpointName, $callback, Skeleton $skeleton) {
 		$this->name = $endpointName;
 		$this->file = $this->_getEndpointFile();
@@ -25,6 +118,12 @@ class Endpoint_Entity {
 		$this->baseUri = $this->_makeUri();
 	}
 
+	/**
+	 * Returns properties of the endpoint
+	 * 
+	 * @param  string $param Variable name of property
+	 * @return ?        Endpoint entity property
+	 */
 	public function &__get($param) {
 		if(array_key_exists($param, $this->activeParams)) {
 			return $this->activeParams[$param];
@@ -35,6 +134,9 @@ class Endpoint_Entity {
 		return $this->dud;
 	}
 
+	/**
+	 * Runs after everything is complete
+	 */
 	public function __destruct() {
 		if($this->file != basename($this->skeleton->router->getRoute(), EXT)) return;
 		// make sure this request method type hasn't ran already
@@ -108,11 +210,23 @@ class Endpoint_Entity {
 		}
 	}
 
+	/**
+	 * The file of the endpoint
+	 * 
+	 * @return string Name of the endpoint file
+	 */
 	private function _getEndpointFile() {
 		$trace = debug_backtrace();
 		return strtolower(str_replace(array(EXT, SERVICE_PATH . 'endpoints'), '', basename($trace[2]['file'])));
 	}
 
+	/**
+	 * Create a get response on the endpoint
+	 * 
+	 * @param  string or array $uri  Uri route on the endpoint
+	 * @param  closure $callback Callback to run
+	 * @return closure the callback
+	 */
 	public function get($uri, $callback = null) {
 		$madeUri = $this->_makeUri($uri);
 		$this->skeleton->router->addToMap($madeUri, $this->file);
@@ -300,9 +414,9 @@ class Endpoint_Entity {
 			case 'xml':
 				$this->outputFormat = 'xml';
 				break;
-			case 'csv':
-				$this->outputFormat = 'csv';
-				break;
+			// case 'csv':
+			// 	$this->outputFormat = 'csv';
+			// 	break;
 			default:
 				$this->outputFormat = 'json';
 				break;
