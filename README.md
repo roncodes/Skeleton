@@ -6,7 +6,6 @@ Skeleton is a REST Service framework that focuses on making RESTful services qui
     git clone git@github.com:theprestig3/Skeleton.git newService
 	cd newService
 	touch .development
-	php skeleton new endpoint users
 
 ## Inside an Endpoint ##
 	# Inside the users endpoint (endpoints/users.php)
@@ -49,9 +48,7 @@ Skeleton endpoints can use scaffold responses for typical request such as GET, P
 	// GET: /users -- will result in a JSON response of all users
 	// GET: /users/1 -- will result in JSON response of user with ID 1
 	// POST: /users -- will create a user
-	// DELETE: /users -- will result in error, must specify user ID
 	// DELETE: /users/1 -- will delete user with ID 1
-	// PUT: /users -- will update all users with specified properties
 	// PUT /users/1 -- will update user with ID 1
 
 ## Todo ##
