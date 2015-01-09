@@ -41,9 +41,41 @@ class Endpoint_Entity {
 		if(isset($this->skeleton->callStack[$this->skeleton->request->method()])) return;
 		// Add to call Array
 		$this->skeleton->callStack[$this->skeleton->request->method()] = str_replace($this->skeleton->router->getRoutePatternKeys(), '{var}', $this->baseUri);
-		if(!$this->factoryOutputCalled && is_callable($this->callback) && !$this->requestEnded) {
+		if(!$this->factoryOutputCalled && is_callable($this->callback)) {
 			// run the users callback
 			call_user_func($this->callback, $this, $this->skeleton, $this->skeleton->request);
+		} else {
+			// FACTORY OUTPUT
+			echo 'here?';
+			$args = explode('/', $this->skeleton->router->getUri());
+			$method = (isset($args[0])) ? $args[0] : $this->file;
+			$id = (isset($args[1])) ? $args[1] : false;
+			$queryString = $this->skeleton->router->getQueryString();
+			parse_str($queryString, $queryData);
+			switch ($this->skeleton->request->method()) {
+				case 'GET':
+					if($id) {
+						// retreive a specific row
+						$row = $this->model->getBy($this->model->getPrimaryKey(), $id);
+						$this->out(array(
+							'status' => 'success',
+							'message' => sprintf('%s Retreived', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable())))),
+							'data' => $row
+						));
+					} else {
+						$allRows = $this->model->getAll();
+						$this->out(array(
+							'status' => 'success',
+							'message' => sprintf('All %s Retreived', ucwords(str_replace('_', ' ', Inflector_Helper::plural($this->model->getTable())))),
+							'data' => $allRows
+						));
+					}
+					break;
+				
+				default:
+					# code...
+					break;
+			}
 		}
 	}
 
@@ -74,27 +106,66 @@ class Endpoint_Entity {
 	}
 
 	public function post($uri, $callback = null) {
+		$madeUri = $this->_makeUri($uri);
+		$this->skeleton->router->addToMap($madeUri, $this->file);
+		if($this->skeleton->router->getPreloadFlag() == true) return;
+		$this->_makeParams($uri);
 		if($this->skeleton->request->method() != 'POST') return;
-		if(is_callable($uri)) {
-			return $uri($this->skeleton, $this, $this->skeleton->request);
+		// make sure URI is valid
+		if(!$this->skeleton->router->routeMatch($madeUri, $this->skeleton->router->getUri())) return;
+		// make sure its not a duplicate request
+		if(in_array($madeUri, $this->skeleton->callStack)) return;
+		// continue!
+		$this->skeleton->callStack['POST'] = str_replace($this->skeleton->router->getRoutePatternKeys(), '{var}', $madeUri);
+		if(is_array($uri)) {
+			return $callback($this);
 		}
-		return $callback($this->skeleton, $this, $this->skeleton->request);
+		if(is_callable($uri)) {
+			return $uri($this, $this->skeleton, $this->skeleton->request);
+		}
+		return $callback($this, $this->skeleton, $this->skeleton->request);
 	}
 
 	public function put($uri, $callback = null) {
+		$madeUri = $this->_makeUri($uri);
+		$this->skeleton->router->addToMap($madeUri, $this->file);
+		if($this->skeleton->router->getPreloadFlag() == true) return;
+		$this->_makeParams($uri);
 		if($this->skeleton->request->method() != 'PUT') return;
-		if(is_callable($uri)) {
-			return $uri($this->skeleton, $this, $this->skeleton->request);
+		// make sure URI is valid
+		if(!$this->skeleton->router->routeMatch($madeUri, $this->skeleton->router->getUri())) return;
+		// make sure its not a duplicate request
+		if(in_array($madeUri, $this->skeleton->callStack)) return;
+		// continue!
+		$this->skeleton->callStack['PUT'] = str_replace($this->skeleton->router->getRoutePatternKeys(), '{var}', $madeUri);
+		if(is_array($uri)) {
+			return $callback($this);
 		}
-		return $callback($this->skeleton, $this, $this->skeleton->request);
+		if(is_callable($uri)) {
+			return $uri($this, $this->skeleton, $this->skeleton->request);
+		}
+		return $callback($this, $this->skeleton, $this->skeleton->request);
 	}
 
 	public function delete($uri, $callback = null) {
+		$madeUri = $this->_makeUri($uri);
+		$this->skeleton->router->addToMap($madeUri, $this->file);
+		if($this->skeleton->router->getPreloadFlag() == true) return;
+		$this->_makeParams($uri);
 		if($this->skeleton->request->method() != 'DELETE') return;
-		if(is_callable($uri)) {
-			return $uri($this->skeleton, $this, $this->skeleton->request);
+		// make sure URI is valid
+		if(!$this->skeleton->router->routeMatch($madeUri, $this->skeleton->router->getUri())) return;
+		// make sure its not a duplicate request
+		if(in_array($madeUri, $this->skeleton->callStack)) return;
+		// continue!
+		$this->skeleton->callStack['DELETE'] = str_replace($this->skeleton->router->getRoutePatternKeys(), '{var}', $madeUri);
+		if(is_array($uri)) {
+			return $callback($this);
 		}
-		return $callback($this->skeleton, $this, $this->skeleton->request);
+		if(is_callable($uri)) {
+			return $uri($this, $this->skeleton, $this->skeleton->request);
+		}
+		return $callback($this, $this->skeleton, $this->skeleton->request);
 	}
 
 	public function setModel($tableName = null) {
@@ -113,12 +184,18 @@ class Endpoint_Entity {
 	public function factoryOutput() {
 		// run default output -- GET, POST, PUT, DELETE Factory stuff
 		$this->factoryOutputCalled = true;
-		// run factory stuff on destruct
-		// if($this->skeleton->request->method() == 'GET') {
-		// 	$all = R::findAll($this->dbTable);
-		// 	$this->out(R::exportAll($all));
-		// }
-		// return $this;
+		$this->_makeAndSetUris();
+		if($this->skeleton->router->getPreloadFlag() == true) return $this;
+		return $this;
+	}
+
+	private function _makeAndSetUris() {
+		// GET: /all, POST: /all, PUT: /all/:id, DELETE: /all/:id
+		$this->skeleton->router->addToMap($this->name, $this->file);
+		// GET: /all/:id, PUT: /all/:id, DELETE: /all/:id
+		$this->skeleton->router->addToMap($this->name . '/:id', $this->file);
+		// ALL ELSE
+		$this->skeleton->router->addToMap($this->skeleton->router->getUri(), $this->file);
 	}
 
 	private function _makeParams($requestParams = array()) {

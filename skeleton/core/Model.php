@@ -31,8 +31,20 @@ class Skeleton_Model {
 		return R::exportAll($data);
 	}
 
+	public function getPrimaryKey() {
+		return $this->primaryKey;
+	}
+
+	public function getTable() {
+		return $this->table;
+	}
+
 	public function get($id) {
 		return $this->_return(R::load($this->table, $id));
+	}
+
+	public function getBy($column, $value) {
+		return $this->_return(R::findOne($this->table, sprintf('%s = ?', $column), [$value]));
 	}
 
 	public function getBean($id) {
