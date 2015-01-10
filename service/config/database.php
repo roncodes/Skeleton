@@ -8,7 +8,7 @@ $config->database('testDb:development', array(
 	'type' => 'mysql',
 	'port' => 3306,
 	'host' => 'localhost',
-	'dbname' => 'sutracamp',
+	'dbname' => 'yolo',
 	'user' => 'root',
 	'password' => ''
 ));

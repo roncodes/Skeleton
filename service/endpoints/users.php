@@ -12,14 +12,14 @@ $endpoint = $skeleton->new->Endpoint('users')->setTable('users')->factoryOutput(
 // 	echo 'yolo';
 // });
 
-/**
- * GET: /users/:userId
- * @return JSON of User by ID
- */
-$endpoint->get(['userId'], function($e) {
-	$user = $e->model->get($e->userId);
-	$e->outputAs('xml')->out($user);
-});
+// /**
+//  * GET: /users/:userId
+//  * @return XML of User by ID
+//  */
+// $endpoint->get(['userId'], function($e) {
+// 	$user = $e->model->get($e->userId);
+// 	$e->outputAs('xml')->out($user);
+// });
 
 // /**
 //  * GET: /users?userId=
