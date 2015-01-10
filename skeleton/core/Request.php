@@ -43,11 +43,15 @@ class Skeleton_Request {
 	 */
 	private $body = null;
 
-
+	/**
+	 * Get the request component ready
+	 * 
+	 * @param Skeleton $skeleton 
+	 */
 	public function __construct($skeleton) {
 		$this->skeleton = $skeleton;
 		$this->ipAddress = $this->ip();
-		$this->userAgent = get_browser();
+		// $this->userAgent = get_browser();
 		$this->params = $this->_incoming();
 		$this->body = $this->body();
 	}
@@ -60,11 +64,11 @@ class Skeleton_Request {
 	* @return	string
 	*/
 	private function _incoming($index = null) {
-		parse_str(file_get_contents('php://input'), $data); 
-		if ($index === NULL AND !empty($data)) {
+		parse_str($this->body, $data); 
+		if ($index === null AND !empty($data)) {
 			return $data;
 		}
-		return $data[$index];
+		return (array_key_exists($index, $data)) ? $data[$index] : array();
 	}
 
 	/**
@@ -76,10 +80,10 @@ class Skeleton_Request {
 	*/
 	public function get($index = null) {
 		// Check if a field has been provided
-		if ($index === NULL AND !empty($_GET)) {
+		if ($index === null AND !empty($_GET)) {
 			return $_GET;
 		}
-		return $_GET[$index];
+		return (array_key_exists($index, $_GET)) ? $_GET[$index] : false;
 	}
 
 	/**
@@ -91,10 +95,10 @@ class Skeleton_Request {
 	*/
 	public function post($index = null) {
 		// Check if a field has been provided
-		if ($index === NULL AND !empty($_POST)) {
+		if ($index === null AND !empty($_POST)) {
 			return $_POST;
 		}
-		return $_POST[$index];
+		return (array_key_exists($index, $_POST)) ? $_POST[$index] : false;
 	}
 
 	/**
@@ -116,12 +120,40 @@ class Skeleton_Request {
 	* @return	string
 	*/
 	public function put($index = null) {
-		return $this->_incoming($index);
+		return $this->_putData($index);
+	}
+
+	/**
+	 * Parse PUT request, and return put data
+	 * 
+	 * @param  string $index 
+	 * @return string
+	 */
+	private function _putData($index = null) {
+		$data = $this->_incoming();
+		if(strpos(current($data), 'WebKitFormBoundary') === false) {
+			return array_key_exists($index, $data) ? $data[$index] : $data;
+		}
+		$data = reset($data);
+		$data = preg_split('/------WebKitFormBoundary.*nContent-Disposition: form-data; name=/', $data);
+		$put_data = array();
+		foreach($data as $input) {
+			// get key
+			preg_match('/"([^"]+)"/', $input, $key);
+			// get data
+			$input = preg_replace('/------WebKitFormBoundary.*--/', '', $input);
+			$put_data[$key[1]] = trim(str_replace($key[0], '', $input));
+		}
+		if($index == null) {
+			return $put_data;
+		}
+		return array_key_exists($index, $put_data) ? $put_data[$index] : false;
 	}
 
 	/**
 	 * Returns all request parameters
-	 * 
+	 *
+	 * @access public
 	 * @return array
 	 */
 	public function params() {
@@ -170,17 +202,17 @@ class Skeleton_Request {
 	 * @return string
 	 */
 	public function ip() {
-	    if ($_SERVER['HTTP_CLIENT_IP'])
+	    if (isset($_SERVER['HTTP_CLIENT_IP']))
 	        $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
-	    else if($_SERVER['HTTP_X_FORWARDED_FOR'])
+	    else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
 	        $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
-	    else if($_SERVER['HTTP_X_FORWARDED'])
+	    else if(isset($_SERVER['HTTP_X_FORWARDED']))
 	        $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
-	    else if($_SERVER['HTTP_FORWARDED_FOR'])
+	    else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
 	        $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
-	    else if($_SERVER['HTTP_FORWARDED'])
+	    else if(isset($_SERVER['HTTP_FORWARDED']))
 	        $ipaddress = $_SERVER['HTTP_FORWARDED'];
-	    else if($_SERVER['REMOTE_ADDR'])
+	    else if(isset($_SERVER['REMOTE_ADDR']))
 	        $ipaddress = $_SERVER['REMOTE_ADDR'];
 	    else
 	        $ipaddress = 'UNKNOWN';

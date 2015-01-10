@@ -1,7 +1,16 @@
 <?php
 class Inflector_Helper {
 
-	public static function plural($str, $force = FALSE) {
+	/**
+	 * takes a string and makes it plural
+	 * -- this is borrowed from CodeIgniter
+	 * 
+	 * @param  string  $str  
+	 * @return string
+	 * @author ExpressionEngine Dev Team
+ 	 * @link   http://codeigniter.com/user_guide/helpers/directory_helper.html
+	 */
+	public static function plural($str) {
 		$result = strval($str);
 		$plural_rules = array(
 			'/^(ox)$/'                 => '\1\2en',     // ox
@@ -33,6 +42,15 @@ class Inflector_Helper {
 		return $result;
 	}
 
+	/**
+	 * takes a string and makes it singular
+	 * -- this is borrowed from CodeIgniter
+	 * 
+	 * @param  string  $str  
+	 * @return string
+	 * @author ExpressionEngine Dev Team
+ 	 * @link   http://codeigniter.com/user_guide/helpers/directory_helper.html
+	 */
 	public static function singular($str) {
 		$result = strval($str);
 		$singular_rules = array(

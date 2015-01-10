@@ -188,29 +188,69 @@ class Endpoint_Entity {
 							'message' => 'Nothing to do'
 						));
 					} else {
+						// set required parameters
+						$this->model->setRequiredColumns(['username', 'email']);
 						// create row
-						$this->model->insert($this->request->data());
+						$newRow = $this->model->insert($this->request->post());
+						// done
+						if($newRow) {
+							$this->out(array(
+								'status' => 'success',
+								'message' => sprintf('%s Created', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable())))),
+								'data' => $this->model->getBy($this->model->getPrimaryKey(), $newRow)
+							));
+						} else {
+							$this->out(array(
+								'status' => 'error',
+								'message' => sprintf('Failed to create new %s', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable()))))
+							));
+						}
 					}
 					break;
 
 				case 'PUT':
 					if($id) {
 						// update row
+						$updatedRow = $this->model->update($id, $this->request->put());
+						if($updatedRow) {
+							$this->out(array(
+								'status' => 'success',
+								'message' => sprintf('%s Updated', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable())))),
+								'data' => $this->model->getBy($this->model->getPrimaryKey(), $updatedRow)
+							));
+						} else {
+							$this->out(array(
+								'status' => 'error',
+								'message' => sprintf('Failed to update %s', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable()))))
+							));
+						}
 					} else {
 						$this->out(array(
 							'status' => 'error',
-							'message' => 'Nothing to do'
+							'message' => sprintf('No %s found to update', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable()))))
 						));
 					}
 					break;
 
 				case 'DELETE':
 					if($id) {
-						// delete row
+						// update row
+						$deletedRow = $this->model->delete($id);
+						if($deletedRow) {
+							$this->out(array(
+								'status' => 'success',
+								'message' => sprintf('%s Deleted', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable()))))
+							));
+						} else {
+							$this->out(array(
+								'status' => 'error',
+								'message' => sprintf('Failed to deleted %s', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable()))))
+							));
+						}
 					} else {
 						$this->out(array(
 							'status' => 'error',
-							'message' => 'Nothing to do'
+							'message' => sprintf('No %s found to delete', ucwords(str_replace('_', ' ', Inflector_Helper::singular($this->model->getTable()))))
 						));
 					}
 					break;

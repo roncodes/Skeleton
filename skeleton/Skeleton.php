@@ -1,6 +1,11 @@
 <?php
 class Skeleton {
 
+    /**
+     * Bones are dependencies that will be autoloaded 
+     * 
+     * @var array
+     */
     protected $bones = array(
         'dependencies',
         'helpers',
@@ -8,14 +13,59 @@ class Skeleton {
         'formats',
         'exceptions'
     );
+
+    /**
+     * bones that have been loaded
+     * 
+     * @var array
+     */
     private $loadedBones = array();
+
+    /**
+     * active endpoints
+     * 
+     * @var array
+     */
     public $endpoints = array();
+
+    /**
+     * libraries loaded into skeleton
+     * 
+     * @var array
+     */
     private $libraries = array();
+
+    /**
+     * models loaded into skeleton
+     * 
+     * @var array
+     */
     private $models = array();
+
+    /**
+     * current environment
+     * 
+     * @var string
+     */
     private $environment;
+
+    /**
+     * core components loaded into skeleton
+     * 
+     * @var array
+     */
     private $coreComponents = array();
+
+    /**
+     * request methods that have been called
+     * 
+     * @var array
+     */
     public $callStack = array();
 
+    /**
+     * if a skeleton had a heart, this would be it
+     */
     public function __construct() {
         // Autoload Dependencies & Helpers
         spl_autoload_register([$this, 'loadBones']);
@@ -60,10 +110,21 @@ class Skeleton {
         }
     }
 
+    /**
+     * allows you to add a directory of bones to be loaded
+     * 
+     * @param string $boneDir
+     */
     public function addBones($boneDir) {
         $this->bones[] = $boneDir;
     }
 
+    /**
+     * loads all bones using php autoloader
+     * 
+     * @param  string $className
+     * @return void
+     */
     private function loadBones($className) {
         // Load dem bones
         $requiredBone = $className . EXT;
@@ -79,4 +140,9 @@ class Skeleton {
 
 }
 
+/**
+ * Start instance
+ * 
+ * @var Skeleton
+ */
 $skeleton = new Skeleton();
