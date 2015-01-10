@@ -39,7 +39,7 @@ Skeleton comes with RedBean for ORM, you can use either RedBean or the Skeleton 
 		$allUsers = R::findAll('users');
 	});
 
-## Scaffolding Endpoints ##
+## Factory Output for Endpoints ##
 
 Skeleton endpoints can use scaffold responses for typical request such as GET, POST, PUT, DELETE. To make use of a generated response, check out the following example.
 
