@@ -89,6 +89,13 @@ class Endpoint_Entity {
 	private $skeleton;
 
 	/**
+	 * The request core library
+	 *
+	 * @var Skeleton_Request
+	 */
+	private $request;
+
+	/**
 	 * Array of libraries loaded into endpoint
 	 * 
 	 * @var array
@@ -114,6 +121,7 @@ class Endpoint_Entity {
 		$this->file = $this->_getEndpointFile();
 		$this->callback = $callback;
 		$this->skeleton = $skeleton;
+		$this->request = $skeleton->request;
 		$this->load = new Skeleton_Load($this);
 		$this->baseUri = $this->_makeUri();
 	}
@@ -181,6 +189,7 @@ class Endpoint_Entity {
 						));
 					} else {
 						// create row
+						$this->model->insert($this->request->data());
 					}
 					break;
 
@@ -188,7 +197,10 @@ class Endpoint_Entity {
 					if($id) {
 						// update row
 					} else {
-						// do nothing
+						$this->out(array(
+							'status' => 'error',
+							'message' => 'Nothing to do'
+						));
 					}
 					break;
 
@@ -196,7 +208,10 @@ class Endpoint_Entity {
 					if($id) {
 						// delete row
 					} else {
-						// do nothing
+						$this->out(array(
+							'status' => 'error',
+							'message' => 'Nothing to do'
+						));
 					}
 					break;
 				

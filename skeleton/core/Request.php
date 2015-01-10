@@ -1,26 +1,132 @@
 <?php
 class Skeleton_Request {
 
-	public $skeleton;
-	public $request;
-	public $server;
+	/**
+	 * Skeleton, itself
+	 * 
+	 * @var Skeleton
+	 */
+	private $skeleton;
 
-	public function __construct($skeleton, $body = null) {
+	/**
+	 * IP address of the current user
+	 *
+	 * @var string
+	 */
+	public $ipAddress = false;
+
+	/**
+	 * user agent (web browser) being used by the current user
+	 *
+	 * @var string
+	 */
+	public $userAgent = false;
+
+	/**
+	 * List of all HTTP request headers
+	 *
+	 * @var array
+	 */
+	protected $headers = array();
+
+	/**
+	 * Request parameters
+	 *
+	 * @var array
+	 */
+	protected $params = array();
+
+	/**
+	 * Request body
+	 *
+	 * @var string
+	 */
+	private $body = null;
+
+
+	public function __construct($skeleton) {
 		$this->skeleton = $skeleton;
-		$this->body = $body ? (string) $body : null;
+		$this->ipAddress = $this->ip();
+		$this->userAgent = get_browser();
+		$this->params = $this->_incoming();
+		$this->body = $this->body();
 	}
 
-	public function id($hash = true) {}
+	/**
+	* Fetch data from a incoming request input
+	*
+	* @access	public
+	* @param	string
+	* @return	string
+	*/
+	private function _incoming($index = null) {
+		parse_str(file_get_contents('php://input'), $data); 
+		if ($index === NULL AND !empty($data)) {
+			return $data;
+		}
+		return $data[$index];
+	}
 
-	public function get() {}
+	/**
+	* Fetch an item from the GET array
+	*
+	* @access	public
+	* @param	string
+	* @return	string
+	*/
+	public function get($index = null) {
+		// Check if a field has been provided
+		if ($index === NULL AND !empty($_GET)) {
+			return $_GET;
+		}
+		return $_GET[$index];
+	}
 
-	public function post() {}
+	/**
+	* Fetch an item from the POST array
+	*
+	* @access	public
+	* @param	string
+	* @return	string
+	*/
+	public function post($index = null) {
+		// Check if a field has been provided
+		if ($index === NULL AND !empty($_POST)) {
+			return $_POST;
+		}
+		return $_POST[$index];
+	}
 
-	public function put() {}
+	/**
+	* Fetch data from DELETE request
+	*
+	* @access	public
+	* @param	string
+	* @return	string
+	*/
+	public function delete($index = null) {
+		return $this->_incoming($index);
+	}
 
-	public function delete() {}
+	/**
+	* Fetch data from PUT request
+	*
+	* @access	public
+	* @param	string
+	* @return	string
+	*/
+	public function put($index = null) {
+		return $this->_incoming($index);
+	}
 
-	public function params() {}
+	/**
+	 * Returns all request parameters
+	 * 
+	 * @return array
+	 */
+	public function params() {
+		return $this->params;
+	}
 
 	public function cookies() {}
 
@@ -43,40 +149,65 @@ class Skeleton_Request {
         return $this->body;
 	}
 
-	public function param($key, $value = null) {}
+	/**
+	 * get or set parameter to request parameters
+	 * 
+	 * @param  string $key   key or property
+	 * @param  ? $value value they want to set for key
+	 * @return value of parameter
+	 */
+	public function param($key, $value = null) {
+		if(!$key) return false;
+		if($value !== null) {
+			$this->params[$key] = $value;
+		}
+		return (array_key_exists($key, $this->params)) ? $this->params[$key] : false;
+	}
 
-	public function isSecure() {}
+	/**
+	 * Returns the clients ip address
+	 * 
+	 * @return string
+	 */
+	public function ip() {
+	    if ($_SERVER['HTTP_CLIENT_IP'])
+	        $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+	    else if($_SERVER['HTTP_X_FORWARDED_FOR'])
+	        $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+	    else if($_SERVER['HTTP_X_FORWARDED'])
+	        $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+	    else if($_SERVER['HTTP_FORWARDED_FOR'])
+	        $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+	    else if($_SERVER['HTTP_FORWARDED'])
+	        $ipaddress = $_SERVER['HTTP_FORWARDED'];
+	    else if($_SERVER['REMOTE_ADDR'])
+	        $ipaddress = $_SERVER['REMOTE_ADDR'];
+	    else
+	        $ipaddress = 'UNKNOWN';
+	    return $ipaddress;
+	}
 
-	public function ip() {}
-
-	public function pathname() {}
-
-	public function method($is = null, $allow_override = true) {
+	/**
+	 * the request method being used
+	 * 
+	 * @param  string $is method
+	 * @return string  method in question 
+	 */
+	public function method($is = null) {
         $method = $this->server('REQUEST_METHOD');
-        // Override
-        // if ($allow_override && $method === 'POST') {
-        //     // For legacy servers, override the HTTP method with the X-HTTP-Method-Override header or _method parameter
-        //     if ($this->server('X_HTTP_METHOD_OVERRIDE')) {
-        //         $method = $this->server('X_HTTP_METHOD_OVERRIDE');
-        //     } else {
-        //         $method = $this->param('_method', $method);
-        //     }
-        //     $method = strtoupper($method);
-        // }
-        // We're doing a check
         if (null !== $is) {
             return strcasecmp($method, $is) === 0;
         }
         return $method;
     }
 
+    /**
+	 * alias for method()
+	 * 
+	 * @param  string $is method
+	 * @return boolean true if method is infact being used
+	 */
 	public function isMethod($method) {
 		return $this->method($method);
-	}
-
-	public function query($key, $value = null) {}
-
-	public function segment($index = null) {
-		
 	}
 }
